@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
-@Table(name = "comidas")
+@Table(name = "comida")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
