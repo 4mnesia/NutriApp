@@ -1,5 +1,6 @@
 package com.example.NutriApp.controller;
 
+import com.example.NutriApp.dto.LoginRequest;
 import com.example.NutriApp.model.Usuario;
 import com.example.NutriApp.service.UsuarioService;
 import com.example.NutriApp.dto.UsuarioDTO;
@@ -39,7 +40,7 @@ public class UsuarioController {
         return ResponseEntity.ok(usuariosDTO);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}") 
     @Operation(summary = "Obtener usuario por ID", description = "Retorna un usuario específico según su ID con HATEOAS links")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
@@ -78,13 +79,9 @@ public class UsuarioController {
         @ApiResponse(responseCode = "401", description = "Credenciales inválidas"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<?> loginUsuario(
-            @Parameter(description = "Usuario o email", example = "juanperez")
-            @RequestParam String usernameOrEmail,
-            @Parameter(description = "Hash de contraseña", example = "hashed_password")
-            @RequestParam String passwordHash) {
+    public ResponseEntity<?> loginUsuario(@RequestBody LoginRequest loginRequest) {
         try {
-            Optional<Usuario> usuario = usuarioService.loginUsuario(usernameOrEmail, passwordHash);
+            Optional<Usuario> usuario = usuarioService.loginUsuario(loginRequest.getUsernameOrEmail(), loginRequest.getPasswordHash());
             if (usuario.isPresent()) {
                 UsuarioDTO usuarioDTO = usuarioAssembler.toModel(usuario.get());
                 return ResponseEntity.ok(usuarioDTO);

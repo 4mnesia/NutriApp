@@ -9,10 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -45,6 +47,17 @@ public class AlimentoControllerTest {
         alimento = new Alimento(1L, "Pollo", 165, 31.0f, 0.0f, 3.6f);
         // DTO que devolvería el assembler/controlador
         alimentoDTO = new AlimentoDTO(1L, "Pollo", 165, 31.0f, 0.0f, 3.6f);
+    }
+
+    @Test
+    void testGetAllAlimentos() throws Exception {
+        when(alimentoService.getAllAlimentos()).thenReturn(Collections.singletonList(alimento));
+        when(alimentoAssembler.toCollectionModel(any())).thenReturn(CollectionModel.of(Collections.singletonList(alimentoDTO)));
+
+        mockMvc.perform(get("/api/alimentos"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/hal+json"))
+                .andExpect(jsonPath("$._embedded.alimentoDTOList[0].nombre").value("Pollo"));
     }
 
     @Test
@@ -88,6 +101,25 @@ public class AlimentoControllerTest {
     }
 
     @Test
+    void testUpdateAlimento() throws Exception {
+        Long alimentoId = 1L;
+        Alimento alimentoDetails = new Alimento(null, "Pollo a la plancha", 150, 30.0f, 0.0f, 2.5f);
+        Alimento alimentoActualizado = new Alimento(alimentoId, "Pollo a la plancha", 150, 30.0f, 0.0f, 2.5f);
+        AlimentoDTO alimentoActualizadoDTO = new AlimentoDTO(alimentoId, "Pollo a la plancha", 150, 30.0f, 0.0f, 2.5f);
+
+        when(alimentoService.updateAlimento(any(Long.class), any(Alimento.class))).thenReturn(alimentoActualizado);
+        when(alimentoAssembler.toModel(any(Alimento.class))).thenReturn(alimentoActualizadoDTO);
+
+        mockMvc.perform(put("/api/alimentos/{id}", alimentoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(alimentoDetails)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(alimentoId))
+                .andExpect(jsonPath("$.nombre").value("Pollo a la plancha"))
+                .andExpect(jsonPath("$.caloriasPor100g").value(150));
+    }
+
+    @Test
     void testDeleteAlimento() throws Exception {
         Long alimentoId = 1L;
         doNothing().when(alimentoService).deleteAlimento(alimentoId);
@@ -97,3 +129,4 @@ public class AlimentoControllerTest {
     }
 
 }
+

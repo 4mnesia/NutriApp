@@ -13,10 +13,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -41,16 +44,32 @@ public class ComidaControllerTest {
 
     private Comida comida;
     private ComidaDTO comidaDTO;
+    private Usuario usuario;
+    private LocalDate fecha;
 
     @BeforeEach
     void setUp() {
         objectMapper.registerModule(new JavaTimeModule());
 
-        Usuario usuario = new Usuario();
+        usuario = new Usuario();
         usuario.setId(1L);
+        
+        fecha = LocalDate.now();
 
-        comida = new Comida(1L, TipoDeComida.ALMUERZO, LocalDate.now(), usuario, null);
-        comidaDTO = new ComidaDTO(1L, TipoDeComida.ALMUERZO, LocalDate.now(), 1L);
+        comida = new Comida(1L, TipoDeComida.DESAYUNO, fecha, usuario, null);
+        comidaDTO = new ComidaDTO(1L, TipoDeComida.DESAYUNO, fecha, 1L);
+    }
+    
+    @Test
+    void testGetAllComidas() throws Exception {
+        List<Comida> comidas = Collections.singletonList(comida);
+        when(comidaService.getAllComidas()).thenReturn(comidas);
+        when(comidaAssembler.toCollectionModel(comidas)).thenReturn(CollectionModel.of(Collections.singletonList(comidaDTO), Collections.emptyList()));
+
+        mockMvc.perform(get("/api/comidas"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/hal+json"))
+                .andExpect(jsonPath("$._embedded.comidaDTOList[0].id").value(1L));
     }
 
     @Test
@@ -58,22 +77,58 @@ public class ComidaControllerTest {
         when(comidaService.getComidaById(1L)).thenReturn(Optional.of(comida));
         when(comidaAssembler.toModel(any(Comida.class))).thenReturn(comidaDTO);
 
-        mockMvc.perform(get("/api/comidas/1"))
+        mockMvc.perform(get("/api/comidas/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/hal+json"))
                 .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.tipoDeComida").value("ALMUERZO"));
+                .andExpect(jsonPath("$.tipoDeComida").value("DESAYUNO"));
     }
 
     @Test
     void testGetComidaById_NotFound() throws Exception {
-        Long comidaId = 99L;
-        when(comidaService.getComidaById(comidaId)).thenReturn(Optional.empty());
+        when(comidaService.getComidaById(99L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/comidas/{id}", comidaId))
+        mockMvc.perform(get("/api/comidas/{id}", 99L))
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void testGetComidasByUsuario() throws Exception {
+        List<Comida> comidas = Collections.singletonList(comida);
+        when(comidaService.getComidasByUsuario(1L)).thenReturn(comidas);
+        when(comidaAssembler.toCollectionModel(comidas)).thenReturn(CollectionModel.of(Collections.singletonList(comidaDTO), Collections.emptyList()));
+
+        mockMvc.perform(get("/api/comidas/usuario/{usuarioId}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/hal+json"))
+                .andExpect(jsonPath("$._embedded.comidaDTOList[0].usuarioId").value(1L));
+    }
+
+    @Test
+    void testGetComidasByUsuarioAndFecha() throws Exception {
+        List<Comida> comidas = Collections.singletonList(comida);
+        when(comidaService.getComidasByUsuarioAndFecha(1L, fecha)).thenReturn(comidas);
+        when(comidaAssembler.toCollectionModel(comidas)).thenReturn(CollectionModel.of(Collections.singletonList(comidaDTO), Collections.emptyList()));
+
+        mockMvc.perform(get("/api/comidas/usuario/{usuarioId}/fecha/{fecha}", 1L, fecha.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/hal+json"))
+                .andExpect(jsonPath("$._embedded.comidaDTOList[0].fecha").value(fecha.toString()));
+    }
+    
+    @Test
+    void testGetComidasByUsuarioAndTipo() throws Exception {
+        List<Comida> comidas = Collections.singletonList(comida);
+        String tipoAsString = "DESAYUNO";
+        when(comidaService.getComidasByUsuarioAndTipo(1L, tipoAsString)).thenReturn(comidas);
+        when(comidaAssembler.toCollectionModel(comidas)).thenReturn(CollectionModel.of(Collections.singletonList(comidaDTO), Collections.emptyList()));
+
+        mockMvc.perform(get("/api/comidas/usuario/{usuarioId}/tipo/{tipoDeComida}", 1L, tipoAsString))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/hal+json"))
+                .andExpect(jsonPath("$._embedded.comidaDTOList[0].tipoDeComida").value(tipoAsString));
+    }
+    
     @Test
     void testCrearComida() throws Exception {
         when(comidaService.crearComida(any(Comida.class))).thenReturn(comida);
@@ -88,10 +143,25 @@ public class ComidaControllerTest {
     }
 
     @Test
+    void testUpdateComida() throws Exception {
+        ComidaDTO updatedDto = new ComidaDTO(1L, TipoDeComida.ALMUERZO, fecha, 1L);
+        Comida updatedComida = new Comida(1L, TipoDeComida.ALMUERZO, fecha, usuario, null);
+
+        when(comidaService.updateComida(any(Long.class), any(Comida.class))).thenReturn(updatedComida);
+        when(comidaAssembler.toModel(any(Comida.class))).thenReturn(updatedDto);
+
+        mockMvc.perform(put("/api/comidas/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new Comida(null, TipoDeComida.ALMUERZO, fecha, usuario, null))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tipoDeComida").value("ALMUERZO"));
+    }
+
+    @Test
     void testDeleteComida() throws Exception {
         doNothing().when(comidaService).deleteComida(1L);
 
-        mockMvc.perform(delete("/api/comidas/1"))
+        mockMvc.perform(delete("/api/comidas/{id}", 1L))
                 .andExpect(status().isNoContent());
     }
 }

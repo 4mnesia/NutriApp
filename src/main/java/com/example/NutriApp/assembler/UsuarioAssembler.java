@@ -3,7 +3,6 @@ package com.example.NutriApp.assembler;
 import com.example.NutriApp.controller.UsuarioController;
 import com.example.NutriApp.dto.UsuarioDTO;
 import com.example.NutriApp.model.Usuario;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
 
