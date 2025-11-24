@@ -2,7 +2,6 @@ package com.example.NutriApp.service;
 
 import com.example.NutriApp.model.ComidaAlimento;
 import com.example.NutriApp.model.Comida;
-import com.example.NutriApp.model.Alimento;
 import com.example.NutriApp.repository.ComidaAlimentoRepository;
 import com.example.NutriApp.repository.ComidaRepository;
 import com.example.NutriApp.repository.AlimentoRepository;

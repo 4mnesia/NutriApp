@@ -2,14 +2,12 @@ package com.example.NutriApp.dto;
 
 import com.example.NutriApp.model.TipoDeComida;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.hateoas.RepresentationModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
@@ -26,4 +24,38 @@ public class ComidaDTO extends RepresentationModel<ComidaDTO> {
 
     @Schema(description = "ID del usuario propietario", example = "1")
     private Long usuarioId;
+
+    // Getters
+    public Long getId() {
+        return id;
+    }
+
+    public TipoDeComida getTipoDeComida() {
+        return tipoDeComida;
+    }
+
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public Long getUsuarioId() {
+        return usuarioId;
+    }
+
+    // Setters
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setTipoDeComida(TipoDeComida tipoDeComida) {
+        this.tipoDeComida = tipoDeComida;
+    }
+
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
+    }
+
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
+    }
 }

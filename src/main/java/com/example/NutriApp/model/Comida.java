@@ -4,13 +4,11 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "comida")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Comida de un usuario en una fecha específica")
@@ -36,4 +34,46 @@ public class Comida {
 
     @OneToMany(mappedBy = "comida", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ComidaAlimento> alimentosConCantidad;
+
+    // Getters
+    public Long getId() {
+        return id;
+    }
+
+    public TipoDeComida getTipoDeComida() {
+        return tipoDeComida;
+    }
+
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public List<ComidaAlimento> getAlimentosConCantidad() {
+        return alimentosConCantidad;
+    }
+
+    // Setters
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setTipoDeComida(TipoDeComida tipoDeComida) {
+        this.tipoDeComida = tipoDeComida;
+    }
+
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public void setAlimentosConCantidad(List<ComidaAlimento> alimentosConCantidad) {
+        this.alimentosConCantidad = alimentosConCantidad;
+    }
 }
