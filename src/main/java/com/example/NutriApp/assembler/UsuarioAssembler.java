@@ -1,5 +1,6 @@
 package com.example.NutriApp.assembler;
 
+import com.example.NutriApp.controller.HistorialPesoController;
 import com.example.NutriApp.controller.UsuarioController;
 import com.example.NutriApp.dto.UsuarioDTO;
 import com.example.NutriApp.model.Usuario;
@@ -23,11 +24,25 @@ public class UsuarioAssembler extends RepresentationModelAssemblerSupport<Usuari
         dto.setUsername(usuario.getUsername());
         dto.setEmail(usuario.getEmail());
 
+        // --- CAMPOS NUEVOS AÑADIDOS ---
+        dto.setPeso(usuario.getPeso());
+        dto.setMetaCalorias(usuario.getMetaCalorias());
+        dto.setMetaProteinas(usuario.getMetaProteinas());
+        dto.setMetaCarbos(usuario.getMetaCarbos());
+        dto.setMetaGrasas(usuario.getMetaGrasas());
+
         // Agregar links HATEOAS
         dto.add(linkTo(methodOn(UsuarioController.class).getUsuarioById(usuario.getId())).withSelfRel());
         dto.add(linkTo(methodOn(UsuarioController.class).getAllUsuarios()).withRel("usuarios"));
         dto.add(linkTo(methodOn(UsuarioController.class).updateUsuario(usuario.getId(), null)).withRel("update"));
         dto.add(linkTo(methodOn(UsuarioController.class).deleteUsuario(usuario.getId())).withRel("delete"));
+
+        // Link al historial de peso (buena práctica)
+        try {
+            dto.add(linkTo(methodOn(HistorialPesoController.class).getWeightHistory(usuario.getId())).withRel("historial-peso"));
+        } catch (Exception e) {
+            // Evita errores si el controlador aún no está completamente mapeado durante el build
+        }
 
         return dto;
     }

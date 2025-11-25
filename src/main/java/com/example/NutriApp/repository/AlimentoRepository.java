@@ -12,3 +12,4 @@ public interface AlimentoRepository extends JpaRepository<Alimento, Long> {
     Optional<Alimento> findByNombre(String nombre);
     List<Alimento> findByNombreContainingIgnoreCase(String nombre);
 }
+

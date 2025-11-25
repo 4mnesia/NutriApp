@@ -38,9 +38,8 @@ public class ComidaServiceTest {
 
     @BeforeEach
     public void setUp() {
-        usuario = new Usuario();
-        usuario.setId(1L);
-        usuario.setUsername("juanperez");
+        // --- CORRECCIÓN: Inicializar el objeto Usuario completamente ---
+        usuario = new Usuario(1L, "Juan Pérez", "juanperez", "juan@example.com", "hashed123", 70.0, 2000, 150, 250, 70, null, null);
 
         comida = new Comida();
         comida.setId(1L);
@@ -64,8 +63,8 @@ public class ComidaServiceTest {
     @Test
     public void testCrearComidaUsuarioNoExiste() {
         Comida comidaInvalida = new Comida();
-        Usuario usuarioInvalido = new Usuario();
-        usuarioInvalido.setId(999L);
+        // Usar el constructor completo para el usuario inválido también
+        Usuario usuarioInvalido = new Usuario(999L, "Invalid", "invalid", "invalid@test.com", "pass", 0.0, 0, 0, 0, 0, null, null);
         comidaInvalida.setUsuario(usuarioInvalido);
         comidaInvalida.setTipoDeComida(TipoDeComida.DESAYUNO);
         comidaInvalida.setFecha(LocalDate.now());
@@ -78,9 +77,8 @@ public class ComidaServiceTest {
 
     @Test
     public void testGetComidasByUsuario() {
-        List<Comida> comidas = Arrays.asList(comida);
-        when(comidaRepository.findByUsuario(usuario)).thenReturn(comidas);
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(comidaRepository.findByUsuario(usuario)).thenReturn(Arrays.asList(comida));
 
         List<Comida> resultado = comidaService.getComidasByUsuario(1L);
 
@@ -90,9 +88,8 @@ public class ComidaServiceTest {
 
     @Test
     public void testGetComidasByUsuarioAndFecha() {
-        List<Comida> comidas = Arrays.asList(comida);
-        when(comidaRepository.findByUsuarioAndFecha(usuario, LocalDate.now())).thenReturn(comidas);
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(comidaRepository.findByUsuarioAndFecha(usuario, LocalDate.now())).thenReturn(Arrays.asList(comida));
 
         List<Comida> resultado = comidaService.getComidasByUsuarioAndFecha(1L, LocalDate.now());
 

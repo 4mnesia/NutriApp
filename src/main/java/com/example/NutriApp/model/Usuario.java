@@ -33,57 +33,59 @@ public class Usuario {
     @Schema(description = "Hash de la contraseña", example = "hashed_password_here")
     private String passwordHash;
 
+    @Column
+    @Schema(description = "Peso actual del usuario en kg", example = "70.5")
+    private Double peso;
+
+    // --- CAMPOS NUEVOS PARA METAS ---
+    @Column
+    @Schema(description = "Meta de calorías diarias", example = "2000")
+    private Integer metaCalorias;
+
+    @Column
+    @Schema(description = "Meta de proteínas diarias en gramos", example = "150")
+    private Integer metaProteinas;
+
+    @Column
+    @Schema(description = "Meta de carbohidratos diarios en gramos", example = "250")
+    private Integer metaCarbos;
+
+    @Column
+    @Schema(description = "Meta de grasas diarias en gramos", example = "70")
+    private Integer metaGrasas;
+
+    // --- Relaciones ---
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Schema(description = "Lista de comidas del usuario")
     private List<Comida> comidas;
 
-    // Getters
-    public Long getId() {
-        return id;
-    }
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HistorialPeso> historialPeso;
 
-    public String getFullName() {
-        return fullName;
-    }
+    // --- Getters ---
+    public Long getId() { return id; }
+    public String getFullName() { return fullName; }
+    public String getUsername() { return username; }
+    public String getEmail() { return email; }
+    public String getPasswordHash() { return passwordHash; }
+    public Double getPeso() { return peso; }
+    public Integer getMetaCalorias() { return metaCalorias; }
+    public Integer getMetaProteinas() { return metaProteinas; }
+    public Integer getMetaCarbos() { return metaCarbos; }
+    public Integer getMetaGrasas() { return metaGrasas; }
+    public List<Comida> getComidas() { return comidas; }
+    public List<HistorialPeso> getHistorialPeso() { return historialPeso; }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public List<Comida> getComidas() {
-        return comidas;
-    }
-
-    // Setters
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public void setComidas(List<Comida> comidas) {
-        this.comidas = comidas;
-    }
+    // --- Setters ---
+    public void setId(Long id) { this.id = id; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public void setUsername(String username) { this.username = username; }
+    public void setEmail(String email) { this.email = email; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void setPeso(Double peso) { this.peso = peso; }
+    public void setMetaCalorias(Integer metaCalorias) { this.metaCalorias = metaCalorias; }
+    public void setMetaProteinas(Integer metaProteinas) { this.metaProteinas = metaProteinas; }
+    public void setMetaCarbos(Integer metaCarbos) { this.metaCarbos = metaCarbos; }
+    public void setMetaGrasas(Integer metaGrasas) { this.metaGrasas = metaGrasas; }
+    public void setComidas(List<Comida> comidas) { this.comidas = comidas; }
+    public void setHistorialPeso(List<HistorialPeso> historialPeso) { this.historialPeso = historialPeso; }
 }

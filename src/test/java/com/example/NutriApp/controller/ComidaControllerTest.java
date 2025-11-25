@@ -51,8 +51,8 @@ public class ComidaControllerTest {
     void setUp() {
         objectMapper.registerModule(new JavaTimeModule());
 
-        usuario = new Usuario();
-        usuario.setId(1L);
+        // --- CORRECCIÓN: Inicializar el objeto Usuario completamente ---
+        usuario = new Usuario(1L, "Juan Pérez", "juanperez", "juan@example.com", "hashed123", 70.0, 2000, 150, 250, 70, null, null);
         
         fecha = LocalDate.now();
 

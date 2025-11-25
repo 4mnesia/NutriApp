@@ -57,7 +57,6 @@ public class UsuarioService {
                 user.setFullName(usuarioDetails.getFullName());
             }
             if (usuarioDetails.getEmail() != null && !usuarioDetails.getEmail().isEmpty()) {
-                // Verificar que el email no esté registrado por otro usuario
                 Optional<Usuario> existingEmail = usuarioRepository.findByEmail(usuarioDetails.getEmail());
                 if (existingEmail.isPresent() && !existingEmail.get().getId().equals(id)) {
                     throw new IllegalArgumentException("El email ya está registrado");
@@ -67,6 +66,25 @@ public class UsuarioService {
             if (usuarioDetails.getPasswordHash() != null && !usuarioDetails.getPasswordHash().isEmpty()) {
                 user.setPasswordHash(usuarioDetails.getPasswordHash());
             }
+            
+            // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+            // Actualizar los nuevos campos si no son nulos
+            if (usuarioDetails.getPeso() != null) {
+                user.setPeso(usuarioDetails.getPeso());
+            }
+            if (usuarioDetails.getMetaCalorias() != null) {
+                user.setMetaCalorias(usuarioDetails.getMetaCalorias());
+            }
+            if (usuarioDetails.getMetaProteinas() != null) {
+                user.setMetaProteinas(usuarioDetails.getMetaProteinas());
+            }
+            if (usuarioDetails.getMetaCarbos() != null) {
+                user.setMetaCarbos(usuarioDetails.getMetaCarbos());
+            }
+            if (usuarioDetails.getMetaGrasas() != null) {
+                user.setMetaGrasas(usuarioDetails.getMetaGrasas());
+            }
+
             return usuarioRepository.save(user);
         }
         throw new IllegalArgumentException("Usuario no encontrado");

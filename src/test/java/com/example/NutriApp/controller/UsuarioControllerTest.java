@@ -38,17 +38,20 @@ public class UsuarioControllerTest {
     private ObjectMapper objectMapper;
 
     private UsuarioDTO usuarioDTO;
+    private Usuario usuario;
 
     @BeforeEach
     void setUp() {
-        // El DTO que el assembler/controlador devolverá
-        usuarioDTO = new UsuarioDTO(1L, "Juan Pérez", "juanperez", "juan@example.com");
+        // --- CORRECCIÓN 1: El DTO ahora tiene más campos ---
+        usuarioDTO = new UsuarioDTO(1L, "Juan Pérez", "juanperez", "juan@example.com", 70.5, 2000, 150, 250, 70);
+
+        // --- CORRECCIÓN 2: La entidad Usuario ahora tiene más campos ---
+        usuario = new Usuario(1L, "Juan Pérez", "juanperez", "juan@example.com", "hashed_password", 70.5, 2000, 150, 250, 70, null, null);
     }
 
     @Test
     void testGetAllUsuarios() throws Exception {
-        Usuario usuario = new Usuario(1L, "Juan Pérez", "juanperez", "juan@example.com", "hashed_password", null);
-        when(usuarioService.getAllUsuarios()).thenReturn(Collections.singletonList(usuario)); // El servicio devuelve la entidad
+        when(usuarioService.getAllUsuarios()).thenReturn(Collections.singletonList(usuario));
         when(usuarioAssembler.toCollectionModel(any())).thenReturn(CollectionModel.of(Collections.singletonList(usuarioDTO)));
 
         mockMvc.perform(get("/api/usuarios"))
@@ -60,14 +63,12 @@ public class UsuarioControllerTest {
     @Test
     void testGetUsuarioById_Success() throws Exception {
         Long usuarioId = 1L;
-        Usuario usuario = new Usuario(usuarioId, "Juan Pérez", "juanperez", "juan@example.com", "hashed_password", null);
-
         when(usuarioService.getUsuarioById(usuarioId)).thenReturn(Optional.of(usuario));
         when(usuarioAssembler.toModel(any(Usuario.class))).thenReturn(usuarioDTO);
 
         mockMvc.perform(get("/api/usuarios/{id}", usuarioId))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("application/hal+json")) 
+                .andExpect(content().contentType("application/hal+json"))
                 .andExpect(jsonPath("$.id").value(usuarioId))
                 .andExpect(jsonPath("$.username").value("juanperez"));
     }
@@ -81,21 +82,14 @@ public class UsuarioControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-
     @Test
     void testRegistrarUsuario() throws Exception {
-        // 1. Entidad de entrada (sin ID) que llega en el body
-        Usuario usuarioParaRegistrar = new Usuario(null, "Juan Pérez", "juanperez", "juan@example.com", "hashed_password", null);
-
-        // 2. Entidad de salida (con ID) que devuelve el servicio
-        Usuario usuarioRegistrado = new Usuario(1L, "Juan Pérez", "juanperez", "juan@example.com", "hashed_password", null);
-
-        when(usuarioService.registrarUsuario(any(Usuario.class))).thenReturn(usuarioRegistrado);
+        when(usuarioService.registrarUsuario(any(Usuario.class))).thenReturn(usuario);
         when(usuarioAssembler.toModel(any(Usuario.class))).thenReturn(usuarioDTO);
 
         mockMvc.perform(post("/api/usuarios/registro")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(usuarioParaRegistrar)))
+                        .content(objectMapper.writeValueAsString(usuario)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.username").value("juanperez"));
@@ -107,9 +101,7 @@ public class UsuarioControllerTest {
         loginRequest.setUsernameOrEmail("juanperez");
         loginRequest.setPasswordHash("hashed_password");
 
-        Usuario usuarioLogueado = new Usuario(1L, "Juan Pérez", "juanperez", "juan@example.com", "hashed_password", null);
-
-        when(usuarioService.loginUsuario("juanperez", "hashed_password")).thenReturn(Optional.of(usuarioLogueado));
+        when(usuarioService.loginUsuario("juanperez", "hashed_password")).thenReturn(Optional.of(usuario));
         when(usuarioAssembler.toModel(any(Usuario.class))).thenReturn(usuarioDTO);
 
         mockMvc.perform(post("/api/usuarios/login")
@@ -137,16 +129,17 @@ public class UsuarioControllerTest {
     @Test
     void testUpdateUsuario_Success() throws Exception {
         Long usuarioId = 1L;
-        Usuario usuarioDetails = new Usuario(null, "Juan Pérez Actualizado", "juanperez", "juan.perez@example.com", null, null);
-        Usuario usuarioActualizado = new Usuario(usuarioId, "Juan Pérez Actualizado", "juanperez", "juan.perez@example.com", "hashed_password", null);
-        UsuarioDTO usuarioActualizadoDTO = new UsuarioDTO(usuarioId, "Juan Pérez Actualizado", "juanperez", "juan.perez@example.com");
+        UsuarioDTO usuarioActualizadoDTO = new UsuarioDTO(usuarioId, "Juan Pérez Actualizado", "juanperez", "juan.perez@example.com", 75.5, 2100, 160, 270, 75);
+        
+        // Creamos una entidad actualizada que el servicio devolvería
+        Usuario usuarioActualizado = new Usuario(usuarioId, "Juan Pérez Actualizado", "juanperez", "juan.perez@example.com", "hashed_password", 75.5, 2100, 160, 270, 75, null, null);
 
         when(usuarioService.updateUsuario(any(Long.class), any(Usuario.class))).thenReturn(usuarioActualizado);
         when(usuarioAssembler.toModel(any(Usuario.class))).thenReturn(usuarioActualizadoDTO);
 
         mockMvc.perform(put("/api/usuarios/{id}", usuarioId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(usuarioDetails)))
+                        .content(objectMapper.writeValueAsString(usuario))) // El body de la request puede ser la entidad original
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(usuarioId))
                 .andExpect(jsonPath("$.fullName").value("Juan Pérez Actualizado"))
@@ -156,11 +149,9 @@ public class UsuarioControllerTest {
     @Test
     void testDeleteUsuario() throws Exception {
         Long usuarioId = 1L;
-        // El servicio no devuelve nada (void), así que usamos doNothing()
         doNothing().when(usuarioService).deleteUsuario(usuarioId);
 
         mockMvc.perform(delete("/api/usuarios/{id}", usuarioId))
                 .andExpect(status().isNoContent());
     }
-
 }

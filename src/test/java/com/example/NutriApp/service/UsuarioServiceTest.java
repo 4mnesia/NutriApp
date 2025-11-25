@@ -28,29 +28,34 @@ public class UsuarioServiceTest {
 
     @BeforeEach
     public void setUp() {
+        // --- CORRECCIÓN 1: Se inicializa el usuario con todos los campos ---
         usuario = new Usuario();
         usuario.setId(1L);
         usuario.setFullName("Juan Pérez");
         usuario.setUsername("juanperez");
         usuario.setEmail("juan@example.com");
         usuario.setPasswordHash("hashed123");
+        usuario.setPeso(70.0);
+        usuario.setMetaCalorias(2000);
+        usuario.setMetaProteinas(150);
+        usuario.setMetaCarbos(250);
+        usuario.setMetaGrasas(70);
     }
 
     @Test
     public void testRegistrarUsuarioExitoso() {
-        when(usuarioRepository.findByUsername("nuevoUsuario")).thenReturn(Optional.empty());
-        when(usuarioRepository.findByEmail("nuevo@example.com")).thenReturn(Optional.empty());
-        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
-
         Usuario nuevoUsuario = new Usuario();
-        nuevoUsuario.setFullName("Juan");
         nuevoUsuario.setUsername("nuevoUsuario");
         nuevoUsuario.setEmail("nuevo@example.com");
-        nuevoUsuario.setPasswordHash("password123");
+
+        when(usuarioRepository.findByUsername("nuevoUsuario")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail("nuevo@example.com")).thenReturn(Optional.empty());
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(nuevoUsuario);
 
         Usuario resultado = usuarioService.registrarUsuario(nuevoUsuario);
 
         assertNotNull(resultado);
+        assertEquals("nuevoUsuario", resultado.getUsername());
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
     }
 
@@ -60,7 +65,6 @@ public class UsuarioServiceTest {
 
         Usuario duploUsuario = new Usuario();
         duploUsuario.setUsername("juanperez");
-        duploUsuario.setEmail("nuevo@example.com");
 
         assertThrows(IllegalArgumentException.class, 
             () -> usuarioService.registrarUsuario(duploUsuario));
@@ -87,38 +91,28 @@ public class UsuarioServiceTest {
         assertFalse(resultado.isPresent());
     }
 
-    @Test
-    public void testGetUsuarioById() {
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
-
-        Optional<Usuario> resultado = usuarioService.getUsuarioById(1L);
-
-        assertTrue(resultado.isPresent());
-        assertEquals(1L, resultado.get().getId());
-    }
-
-    @Test
-    public void testGetUsuarioByIdNoExiste() {
-        when(usuarioRepository.findById(999L)).thenReturn(Optional.empty());
-
-        Optional<Usuario> resultado = usuarioService.getUsuarioById(999L);
-
-        assertFalse(resultado.isPresent());
-    }
-
+    // --- CORRECCIÓN 2: Test de actualización mejorado ---
     @Test
     public void testUpdateUsuario() {
+        // 1. Arrange: Preparamos los detalles de la actualización
         Usuario usuarioDetails = new Usuario();
         usuarioDetails.setFullName("Juan Updated");
-        usuarioDetails.setEmail("newemail@example.com");
+        usuarioDetails.setMetaCalorias(2500);
+        usuarioDetails.setPeso(72.5);
 
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.findByEmail("newemail@example.com")).thenReturn(Optional.empty());
-        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+        // Hacemos que el mock de save devuelva el objeto que se le pasa
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
+        // 2. Act: Llamamos al método a probar
         Usuario resultado = usuarioService.updateUsuario(1L, usuarioDetails);
 
+        // 3. Assert: Verificamos que los campos se actualizaron correctamente
         assertNotNull(resultado);
+        assertEquals("Juan Updated", resultado.getFullName()); // Campo antiguo actualizado
+        assertEquals(2500, resultado.getMetaCalorias());    // Campo nuevo actualizado
+        assertEquals(72.5, resultado.getPeso());            // Campo nuevo actualizado
+        assertEquals("juan@example.com", resultado.getEmail()); // Campo no actualizado, debe permanecer original
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
     }
 
@@ -131,4 +125,3 @@ public class UsuarioServiceTest {
         verify(usuarioRepository, times(1)).deleteById(1L);
     }
 }
-

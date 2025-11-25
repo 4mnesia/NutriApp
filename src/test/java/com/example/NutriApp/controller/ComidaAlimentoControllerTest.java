@@ -49,8 +49,12 @@ public class ComidaAlimentoControllerTest {
     void setUp() {
         objectMapper.registerModule(new JavaTimeModule());
 
-        Usuario usuario = new Usuario(1L, "Test User", "testuser", "test@example.com", "password", null);
+        Usuario usuario = new Usuario(1L, "Test User", "testuser", "test@example.com", "password", 70.5, 2000, 150, 250, 70, null, null);
+        
         comida = new Comida(1L, TipoDeComida.ALMUERZO, LocalDate.now(), usuario, null);
+        
+        // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+        // Se llama al constructor de Alimento con 6 argumentos, que es el correcto.
         alimento = new Alimento(1L, "Pollo", 165, 31.0f, 0.0f, 3.6f);
         
         comidaAlimento = new ComidaAlimento(1L, comida, alimento, 150);
