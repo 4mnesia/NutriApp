@@ -26,7 +26,6 @@ Qué hace
 ```
 .\mvnw.cmd test
 ```
-
 # 🗂️ Estructura del proyecto
 ```
 src/
